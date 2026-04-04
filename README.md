@@ -20,27 +20,3 @@ A simple **Todo application** built with **Flask** that allows users to register
 
 ---
 
-## **Folder Structure**
-todo_app/
-│
-├── [run.py]        # App entry point
-├── app/
-│   ├── init.py         # Initialize Flask, DB, login_manager
-│   ├── models/
-│   │   ├── init.py     # Import models
-│   │   ├── [user.py]        # User model
-│   │   └── [todo.py]       # Task model
-│   ├── routes/
-│   │   ├── init.py     # Empty
-│   │   ├── [auth.py]       # Login/Register/Logout
-│   │   └── [tasks.py]      # Dashboard, Add, Delete, Toggle status
-│   ├── static/
-│   │   └── css/
-│   │       └── style.css
-│   └── templates/
-│       ├── base.html
-│       ├── login.html
-│       ├── register.html
-│       ├── dashboard.html
-│       └── add_task.html
-└── venv/
