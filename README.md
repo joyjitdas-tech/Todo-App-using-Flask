@@ -14,7 +14,6 @@ A simple **Todo application** built with **Flask** that allows users to register
   - Deadline time
 - Mark tasks as completed/uncompleted
 - Edit and delete tasks
-- Responsive UI
 - Flash messages for actions
 - Simple, clean design with CSS
 
