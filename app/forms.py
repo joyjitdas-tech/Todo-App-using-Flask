@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, DateField, TimeField, SubmitField
+from wtforms import StringField, TextAreaField, DateField, TimeField, SubmitField,HiddenField
 from wtforms.validators import DataRequired
 
 class TaskForm(FlaskForm):
@@ -8,3 +8,4 @@ class TaskForm(FlaskForm):
     due_date = DateField('Due Date', validators=[DataRequired()])
     deadline = TimeField('Time', validators=[DataRequired()])
     submit = SubmitField('Add Task')
+    id = HiddenField()

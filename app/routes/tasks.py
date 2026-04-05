@@ -19,36 +19,41 @@ def dashboard():
   # make sure this exists
 
 @task_bp.route('/add', methods=['GET', 'POST'])
+@task_bp.route('/edit/<int:task_id>', methods=['GET', 'POST'])
 @login_required
-def add_task():
-    form = TaskForm()
+def add_edit_task(task_id=None):
+
+    if task_id:
+        task = Todo.query.get_or_404(task_id)
+        if task.user_id != current_user.id:
+            return redirect(url_for('task.dashboard'))
+        form = TaskForm(obj=task)
+    else:
+        task = None
+        form = TaskForm()
 
     if form.validate_on_submit():
-        try:
-            deadline = datetime.combine(
-                form.due_date.data,
-                form.deadline.data
-            )
 
-            new_task = Todo(
+        if task:  # 🔥 EDIT MODE
+            task.title = form.title.data
+            task.description = form.description.data
+            task.due_date = form.due_date.data
+            task.deadline = datetime.combine(form.due_date.data, form.deadline.data)
+
+        else:  # 🔥 ADD MODE
+            task = Todo(
                 title=form.title.data,
                 description=form.description.data,
                 due_date=form.due_date.data,
-                deadline=deadline,
+                deadline=datetime.combine(form.due_date.data, form.deadline.data),
                 user_id=current_user.id
             )
+            db.session.add(task)
 
-            db.session.add(new_task)
-            db.session.commit()
+        db.session.commit()
+        return redirect(url_for('task.dashboard'))
 
-            flash('Task added successfully!', 'success')
-            return redirect(url_for('task.dashboard'))
-
-        except Exception as e:
-            print("ERROR:", e)
-            flash('Error occurred!', 'danger')
-
-    return render_template('add_task.html', form=form)
+    return render_template('add_task.html', form=form, task=task, edit=(task is not None))
 # ---------------- Delete Task ----------------
 @task_bp.route('/delete/<int:task_id>', methods=['POST'])
 @login_required
@@ -68,39 +73,45 @@ def delete_task(task_id):
 @task_bp.route('/toggle/<int:task_id>', methods=['POST'])
 @login_required
 def toggle_task(task_id):
-    task = Todo.query.get_or_404(task_id)
+    try:
+        task = Todo.query.get_or_404(task_id)
 
-    if task.user_id != current_user.id:
-        flash('Not authorized!', 'danger')
-        return redirect(url_for('task.dashboard'))
+        # Check authorization
+        if task.user_id != current_user.id:
+            return '', 403  # Forbidden
 
-    task.status = 'completed' if task.status == 'pending' else 'pending'
-    db.session.commit()
-    flash('Task updated!', 'success')
+        # Toggle status
+        task.status = 'completed' if task.status == 'pending' else 'pending'
+        db.session.commit()
+
+        # Return empty 200 OK response for JS
+        return '', 200
+
+    except Exception as e:
+        # Print for debugging in terminal
+        print("TOGGLE ERROR:", e)
+        # Return 500 response
+        return str(e), 500
 
 #----------------EDIT TASK---------------------------------
-@task_bp.route('/edit/<int:task_id>', methods=['GET', 'POST'])
-@login_required
-def edit_task(task_id):
-    task = Todo.query.get_or_404(task_id)
+# routes/tasks.py
+# @task_bp.route('/edit/<int:task_id>', methods=['GET', 'POST'])
+# @login_required
+# def edit_task(task_id):
+#     task = Todo.query.get_or_404(task_id)
+#     if task.user_id != current_user.id:
+#         flash('Not authorized!', 'danger')
+#         return redirect(url_for('task.dashboard'))
 
-    if task.user_id != current_user.id:
-        flash('Not authorized!', 'danger')
-        return redirect(url_for('task.dashboard'))
+#     form = TaskForm(obj=task)
 
-    form = TaskForm(obj=task)
+#     if form.validate_on_submit():
+#         task.title = form.title.data
+#         task.description = form.description.data
+#         task.due_date = form.due_date.data
+#         task.deadline = datetime.combine(form.due_date.data, form.deadline.data)
+#         db.session.commit()
+#         flash('Task updated!', 'success')
+#         return redirect(url_for('task.dashboard'))
 
-    if form.validate_on_submit():
-        task.title = form.title.data
-        task.description = form.description.data
-        task.due_date = form.due_date.data
-        task.deadline = datetime.combine(
-            form.due_date.data,
-            form.deadline.data
-        )
-
-        db.session.commit()
-        flash('Task updated!', 'success')
-        return redirect(url_for('task.dashboard'))
-
-    return render_template('add_task.html', form=form)
+#     return render_template('add_task.html', form=form, edit=True,task=task)

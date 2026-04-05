@@ -338,7 +338,14 @@ textarea { resize: vertical; min-height: 100px; }
 
 /* Countdown Timer */
 .countdown { font-weight: bold; color: #dc3545; }
+.task-card.overdue {
+    border-left: 5px solid rgb(239, 114, 114);
+    background-color: hsla(0, 82%, 72%, 0.961);
+}
 
+.task-card.completed {
+    background-color: #60ea83;  /* green for completed */
+}
 /* --- Responsive --- */
 @media screen and (max-width: 600px) {
     .container { margin: 20px; padding: 20px; }

@@ -20,7 +20,7 @@ def create_app():
     from app.routes.tasks import task_bp
 
     app.register_blueprint(auth_bp)
-    app.register_blueprint(task_bp)
+    app.register_blueprint(task_bp, url_prefix='/task')
 
     # Create tables
     with app.app_context():

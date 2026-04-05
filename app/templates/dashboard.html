@@ -7,26 +7,28 @@
 </div>
 <div class="task-tabs">
     <button class="tab-btn active" data-tab="today">Today</button>
-    <button class="tab-btn" data-tab="pending">Pending</button>
+    <button class="tab-btn" data-tab="upcoming">Upcoming</button>
     <button class="tab-btn" data-tab="overdue">Overdue</button>
 </div>
 
 <div class="dashboard-container">
     <div class="task-header">
         <h2>Tasks</h2>
-        <a href="{{ url_for('task.add_task') }}" class="btn btn-add">+ Add Task</a>
+        <a href="{{ url_for('task.add_edit_task') }}" class="btn btn-add">+ Add Task</a>
     </div>
 
 <div class="task-container">
     {% if todos %}
         {% for task in todos %}
-        <div class="task-card {% if task.status == 'completed' %}completed{% endif %}">
+        <div class="task-card {% if task.status == 'completed' %}completed{% endif %}"
+     data-status="{{ task.status }}"
+     data-deadline="{{ task.deadline.strftime('%Y-%m-%d %H:%M:%S') if task.deadline else '' }}">
             
             <!-- Checkbox with form to safely toggle task status -->
             <div class="checkbox-form">
                 <input type="checkbox"
                     {% if task.status=='completed' %}checked{% endif %}
-                    onchange="toggleTask('{{ task.id }}')">
+                    onchange="toggleTask('{{ task.id }}', this)">
             </div>
 
             <div class="task-info">
@@ -40,7 +42,7 @@
                 </p>
             </div>
             <div class="task-actions">
-                <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-edit">
+                <a href="{{ url_for('task.add_edit_task', task_id=task.id) }}" class="btn btn-edit">
                     <i class="fas fa-pen"></i> Edit
                 </a>
 
