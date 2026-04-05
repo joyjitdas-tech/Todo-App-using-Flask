@@ -2,63 +2,68 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+
 <div class="dashboard-header">
-    <h1>Todo App </h1>
+    <h1>Todo App</h1>
 </div>
+
+
 <div class="task-tabs">
     <button class="tab-btn active" data-tab="today">Today</button>
     <button class="tab-btn" data-tab="upcoming">Upcoming</button>
     <button class="tab-btn" data-tab="overdue">Overdue</button>
 </div>
 
-<div class="dashboard-container">
-    <div class="task-header">
-        <h2>Tasks</h2>
-        <a href="{{ url_for('task.add_edit_task') }}" class="btn btn-add">+ Add Task</a>
-    </div>
 
-<div class="task-container">
-    {% if todos %}
-        {% for task in todos %}
-        <div class="task-card {% if task.status == 'completed' %}completed{% endif %}"
-     data-status="{{ task.status }}"
-     data-deadline="{{ task.deadline.strftime('%Y-%m-%d %H:%M:%S') if task.deadline else '' }}">
-            
-            <!-- Checkbox with form to safely toggle task status -->
-            <div class="checkbox-form">
+
+
+
+
+    <!-- 📋 CENTER: YOUR EXISTING TASKS -->
+    <div class="dashboard-container">
+        <div class="task-header">
+            <h2>Tasks</h2>
+                    <div id="addBtnWrapper">
+                        <a href="{{ url_for('task.add_edit_task') }}" class="btn btn-add">
+                             Add Task
+                        </a>
+                    </div>
+        </div>
+
+        <div class="task-container">
+        {% if todos %}
+            {% for task in todos %}
+            <div class="task-card {% if task.status == 'completed' %}completed{% endif %}"
+                 data-status="{{ task.status }}"
+                 data-deadline="{{ task.deadline.strftime('%Y-%m-%dT%H:%M:%S') if task.deadline else '' }}">
+
+                <!-- Checkbox -->
                 <input type="checkbox"
                     {% if task.status=='completed' %}checked{% endif %}
                     onchange="toggleTask('{{ task.id }}', this)">
-            </div>
 
-            <div class="task-info">
-                <p class="task-title">{{ task.title }}</p>
-                <p class="task-due">
-                    <i class="far fa-clock"></i>
-                    {{ task.due_date.strftime('%a %b %d %Y') }}
-                    {% if task.deadline %}
-                        - <span class="countdown" data-deadline="{{ task.deadline }}"></span>
-                    {% endif %}
-                </p>
-            </div>
-            <div class="task-actions">
-                <a href="{{ url_for('task.add_edit_task', task_id=task.id) }}" class="btn btn-edit">
-                    <i class="fas fa-pen"></i> Edit
-                </a>
+                <div class="task-info">
+                    <p class="task-title">{{ task.title }}</p>
+                    <p class="task-due">
+                        {{ task.due_date.strftime('%a %b %d %Y') }}
+                        {% if task.deadline %}
+                            - <span class="countdown" data-deadline="{{ task.deadline }}"></span>
+                        {% endif %}
+                    </p>
+                </div>
 
-                <form action="{{ url_for('task.delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-delete">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </form>
-            </div>
+                <div class="task-actions">
+                    <a href="{{ url_for('task.add_edit_task', task_id=task.id) }}" class="btn btn-edit">Edit</a>
+                    <form action="{{ url_for('task.delete_task', task_id=task.id) }}" method="POST">
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                </div>
 
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No tasks yet. Add a task to get started!</p>
+        {% endif %}
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No tasks yet. Add a task to get started!</p>
-    {% endif %}
-</div>
-
-
+    </div>
 {% endblock %}

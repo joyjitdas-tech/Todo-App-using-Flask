@@ -50,35 +50,70 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCountdown();
 
     // Filter Tasks by Tab
-    function filterTasks(type) {
-        const now = new Date();
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate()+1);
+ // Filter Tasks by Tab
+function filterTasks(type) {
+    const now = new Date();
 
-        tasks.forEach(task => {
-            const status = task.dataset.status;
-            const deadlineStr = task.dataset.deadline;
-            if (!deadlineStr) { task.style.display = 'none'; return; }
-            const deadline = new Date(deadlineStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-            if (type === 'today') task.style.display = (deadline >= today && deadline < tomorrow) ? 'block' : 'none';
-            else if (type === 'upcoming') task.style.display = (deadline >= tomorrow) ? 'block' : 'none';
-            else if (type === 'overdue') task.style.display = (deadline < now && status !== 'completed') ? 'block' : 'none';
-        });
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const addBtn = document.getElementById('addBtnWrapper'); // 🔥 IMPORTANT
+
+    // ✅ Control Add Button
+    if (addBtn) {
+        if (type === 'overdue') {
+            addBtn.style.display = 'none';
+        } else {
+            addBtn.style.display = 'block';
+        }
     }
 
-    // Default Tab → Today
-    filterTasks('today');
+    tasks.forEach(task => {
+        const status = task.dataset.status;
+        const deadlineStr = task.dataset.deadline;
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            filterTasks(tab.dataset.tab);
-        });
+        if (!deadlineStr) {
+            task.style.display = 'none';
+            return;
+        }
+
+        const deadline = new Date(deadlineStr);
+
+        // ✅ TODAY
+        if (type === 'today') {
+            task.style.display =
+                (deadline >= today && deadline < tomorrow) ? 'block' : 'none';
+        }
+
+        // ✅ UPCOMING
+        else if (type === 'upcoming') {
+            task.style.display =
+                (deadline >= tomorrow) ? 'block' : 'none';
+        }
+
+        // ✅ OVERDUE
+        else if (type === 'overdue') {
+            task.style.display =
+                (deadline < now && status !== 'completed') ? 'block' : 'none';
+        }
     });
+}
+
+
+// Default Tab → Today
+filterTasks('today');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        filterTasks(tab.dataset.tab); // 🔥 triggers button hide/show too
+    });
+});
 
     // Highlight overdue tasks
     tasks.forEach(task => {
@@ -101,19 +136,4 @@ document.addEventListener("DOMContentLoaded", function () {
             task.classList.add('overdue');
         }
     });
-
-    // Graph (Chart.js)
-    const completedTasks = [...tasks].filter(t => t.dataset.status === 'completed').length;
-    const pendingTasks = [...tasks].filter(t => t.dataset.status !== 'completed').length;
-    const ctx = document.getElementById('progressChart')?.getContext('2d');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Completed', 'Pending'],
-                datasets: [{ data: [completedTasks, pendingTasks], backgroundColor: ['#4CAF50', '#FF9800'] }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-        });
-    }
-});
+})
