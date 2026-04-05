@@ -23,9 +23,11 @@
         <div class="task-card {% if task.status == 'completed' %}completed{% endif %}">
             
             <!-- Checkbox with form to safely toggle task status -->
-            <form action="{{ url_for('task.toggle_task', task_id=task.id) }}" method="POST" class="checkbox-form">
-                <input type="checkbox" {% if task.status=='completed' %}checked{% endif %} onchange="this.form.submit()">
-            </form>
+            <div class="checkbox-form">
+                <input type="checkbox"
+                    {% if task.status=='completed' %}checked{% endif %}
+                    onchange="toggleTask('{{ task.id }}')">
+            </div>
 
             <div class="task-info">
                 <p class="task-title">{{ task.title }}</p>
@@ -37,14 +39,16 @@
                     {% endif %}
                 </p>
             </div>
-
             <div class="task-actions">
                 <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-edit">
-                    <i class="fas fa-pen"></i>
+                    <i class="fas fa-pen"></i> Edit
                 </a>
-                <a href="{{ url_for('task.delete_task', task_id=task.id) }}" class="btn btn-delete">
-                    <i class="fas fa-trash"></i>
-                </a>
+
+                <form action="{{ url_for('task.delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-delete">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
             </div>
 
         </div>
@@ -54,26 +58,5 @@
     {% endif %}
 </div>
 
-<!-- Countdown Timer JS -->
-<script>
-function updateCountdown() {
-    const countdowns = document.querySelectorAll('.countdown');
-    countdowns.forEach(el => {
-        const deadline = new Date(el.dataset.deadline);
-        const now = new Date();
-        const diff = deadline - now;
-        if(diff <= 0){
-            el.innerText = "Deadline passed";
-        } else {
-            const days = Math.floor(diff / (1000*60*60*24));
-            const hours = Math.floor((diff / (1000*60*60)) % 24);
-            const minutes = Math.floor((diff / (1000*60)) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
-            el.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-        }
-    });
-}
-setInterval(updateCountdown, 1000);
-updateCountdown();
-</script>
+
 {% endblock %}

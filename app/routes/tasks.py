@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models import Todo
 from app import db
 from datetime import datetime
+from app.forms import TaskForm 
 
 task_bp = Blueprint('task', __name__)
 
@@ -15,40 +16,41 @@ def dashboard():
     return render_template('dashboard.html', todos=todos)
 
 # ---------------- Add Task ----------------
+  # make sure this exists
+
 @task_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_task():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        due_date = request.form.get('due_date')  # "YYYY-MM-DD"
-        deadline_time = request.form.get('deadline_time')  # "HH:MM"
+    form = TaskForm()
 
-        if not title or not due_date or not deadline_time:
-            flash('Please fill all required fields!', 'danger')
-            return redirect(url_for('task.add_task'))
+    if form.validate_on_submit():
+        try:
+            deadline = datetime.combine(
+                form.due_date.data,
+                form.deadline.data
+            )
 
-        # Combine date + time for deadline
-        deadline_str = f"{due_date} {deadline_time}"
-        deadline = datetime.strptime(deadline_str, "%Y-%m-%d %H:%M")
+            new_task = Todo(
+                title=form.title.data,
+                description=form.description.data,
+                due_date=form.due_date.data,
+                deadline=deadline,
+                user_id=current_user.id
+            )
 
-        new_task = Todo(
-            title=title,
-            description=description,
-            due_date=datetime.strptime(due_date, "%Y-%m-%d").date(),
-            deadline=deadline,
-            user_id=current_user.id   # Assign correct user_id
-        )
+            db.session.add(new_task)
+            db.session.commit()
 
-        db.session.add(new_task)
-        db.session.commit()
-        flash('Task added successfully!', 'success')
-        return redirect(url_for('task.dashboard'))
+            flash('Task added successfully!', 'success')
+            return redirect(url_for('task.dashboard'))
 
-    return render_template('add_task.html')
+        except Exception as e:
+            print("ERROR:", e)
+            flash('Error occurred!', 'danger')
 
+    return render_template('add_task.html', form=form)
 # ---------------- Delete Task ----------------
-@task_bp.route('/delete/<int:task_id>')
+@task_bp.route('/delete/<int:task_id>', methods=['POST'])
 @login_required
 def delete_task(task_id):
     task = Todo.query.get_or_404(task_id)
@@ -63,7 +65,7 @@ def delete_task(task_id):
     return redirect(url_for('task.dashboard'))
 
 # ---------------- Toggle Task Status ----------------
-@task_bp.route('/toggle/<int:task_id>')
+@task_bp.route('/toggle/<int:task_id>', methods=['POST'])
 @login_required
 def toggle_task(task_id):
     task = Todo.query.get_or_404(task_id)
@@ -74,4 +76,31 @@ def toggle_task(task_id):
 
     task.status = 'completed' if task.status == 'pending' else 'pending'
     db.session.commit()
-    return redirect(url_for('task.dashboard'))
+    flash('Task updated!', 'success')
+
+#----------------EDIT TASK---------------------------------
+@task_bp.route('/edit/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+def edit_task(task_id):
+    task = Todo.query.get_or_404(task_id)
+
+    if task.user_id != current_user.id:
+        flash('Not authorized!', 'danger')
+        return redirect(url_for('task.dashboard'))
+
+    form = TaskForm(obj=task)
+
+    if form.validate_on_submit():
+        task.title = form.title.data
+        task.description = form.description.data
+        task.due_date = form.due_date.data
+        task.deadline = datetime.combine(
+            form.due_date.data,
+            form.deadline.data
+        )
+
+        db.session.commit()
+        flash('Task updated!', 'success')
+        return redirect(url_for('task.dashboard'))
+
+    return render_template('add_task.html', form=form)

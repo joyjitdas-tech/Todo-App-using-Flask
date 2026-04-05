@@ -15,12 +15,10 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = "auth.login_page"
 
-    # Blueprints
-    from .routes.auth import auth_bp
-    from .routes.tasks import task_bp
+    # Blueprints (ONLY THIS)
+    from app.routes.auth import auth_bp
+    from app.routes.tasks import task_bp
 
-    # Blueprints
-    from app.routes import auth_bp, task_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(task_bp)
 
